@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CRUD_Stickers</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <h2>Stickers Orders Software</h2>
+
+  <h3>Nuovo ordine:</h3>
+  <form id="itemForm">
+    <div class="form-row">
+      <div>
+        <label for="itemId">ID:</label>
+        <input type="text" id="itemId">
+      </div>
+      <div>
+        <label for="itemName">Nome:</label>
+        <input type="text" id="itemName" required>
+      </div>
+      <div>
+        <label for="itemType">Articolo:</label>
+        <select id="itemType" required>
+          <option value="Tag">TAG Social</option>
+          <option value="Logo">LOGO</option>
+          <option value="Hastag">HASTAG</option>
+          <option value="Altro">ALTRO(specificare)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="itemInfo">Info:</label>
+        <input type="text" id="itemInfo" required>
+      </div>
+      <div>
+        <label for="itemSize">Dimensione (cm):</label>
+        <input type="number" id="itemSize" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="itemColor">Colore:</label>
+        <input type="color" id="itemColor" required>
+      </div>
+      <div>
+        <label for="itemQuantity">Quantità:</label>
+        <input type="number" id="itemQuantity" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label for="itemPrice">Prezzo:</label>
+        <input type="number" id="itemPrice" step="0.5" required>
+      </div>
+      <div>
+        <input type="submit" value="Salva">
+      </div>
+    </div>
+  </form>
+
+  <h3>Ricerca</h3>
+  <input type="text" id="searchInput" placeholder="Digitare una parola chiave."><br><br>
+
+  <h4>Lista elementi</h4>
+  <label for="sortBy">Ordina per:</label>
+  <select id="sortBy">
+    <option value="PrezzoMax">Prezzo (crescente)</option>
+    <option value="PrezzoMin">Prezzo (decrescente)</option>
+    <option value="QuantitàMax">Quantità (crescente)</option>
+    <option value="QuantitàMin">Quantità (decrescente)</option>
+  </select>
+  <table id="itemTable">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Articolo</th>
+        <th>Info</th>
+        <th>Dimensione (cm)</th>
+        <th>Colore</th>
+        <th>Quantità</th>
+        <th>Prezzo</th>
+        <th>Azioni</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    let items = [];
+
+    function saveItem(event) {
+      event.preventDefault();
+
+      const itemId = document.getElementById('itemId').value;
+      const itemName = document.getElementById('itemName').value;
+      const itemType = document.getElementById('itemType').value;
+      const itemInfo = document.getElementById('itemInfo').value;
+      const itemSize = document.getElementById('itemSize').value;
+      const itemColor = document.getElementById('itemColor').value;
+      const itemQuantity = document.getElementById('itemQuantity').value;
+      const itemPrice = document.getElementById('itemPrice').value;
+
+      const newItem = {
+        id: itemId,
+        name: itemName,
+        type: itemType,
+        info: itemInfo,
+        size: itemSize,
+        color: itemColor,
+        quantity: itemQuantity,
+        price: itemPrice
+      };
+
+      items.push(newItem);
+      displayItems();
+      document.getElementById('itemForm').reset();
+    }
+
+    function displayItems() {
+      const tableBody = document.querySelector('#itemTable tbody');
+      tableBody.innerHTML = '';
+
+      for (const item of items) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>${item.type}</td>
+          <td>${item.info}</td>
+          <td>${item.size}</td>
+          <td>${item.color}</td>
+          <td>${item.quantity}</td>
+          <td>${item.price}</td>
+          <td>
+            <button onclick="editItem('${item.id}')">Modifica</button>
+            <button onclick="deleteItem('${item.id}')">Elimina</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      }
+    }
+
+    function editItem(itemId) {
+      const item = items.find(item => item.id === itemId);
+
+      if (item) {
+        document.getElementById('itemId').value = item.id;
+        document.getElementById('itemName').value = item.name;
+        document.getElementById('itemType').value = item.type;
+        document.getElementById('itemInfo').value = item.info;
+        document.getElementById('itemSize').value = item.size;
+        document.getElementById('itemColor').value = item.color;
+        document.getElementById('itemQuantity').value = item.quantity;
+        document.getElementById('itemPrice').value = item.price;
+      }
+    }
+
+    // Aggiungi event listener al form di inserimento/modifica
+    document.getElementById('itemForm').addEventListener('submit', saveItem);
+
+    // Aggiungi event listener all'input di ricerca
+    document.getElementById('searchInput').addEventListener('input', filterItems);
+
+    // Aggiungi event listener al selettore di ordinamento
+    document.getElementById('sortBy').addEventListener('change', sortItems);
+
+    // Inizializza la lista degli elementi
+    renderItems();
+
+    // Funzione per esportare i dati su un file di testo
+    function exportData() {
+    const dataToExport = JSON.stringify(items);
+    const blob = new Blob([dataToExport], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'data.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    }
+
+    // Aggiungi event listener al pulsante di esportazione
+    const exportButton = document.createElement('button');
+    exportButton.textContent = 'Esporta';
+    exportButton.addEventListener('click', exportData);
+    document.body.appendChild(exportButton);
+
+
+
+
+    var colorPicker = document.querySelector('#colorPicker');
+
+    // Aggiungi un gestore eventi per l'evento "change"
+    colorPicker.addEventListener('change', function(event) {
+      // Ottieni il colore selezionato
+      var selectedColor = event.target.value;
+
+      // Esegui le azioni desiderate con il colore selezionato
+      console.log("Colore selezionato:", selectedColor);
+      // Puoi utilizzare il colore selezionato per effettuare ulteriori operazioni o visualizzarlo altrove nella pagina.
+    });
+
+  </script>
+</body>
+</html>
